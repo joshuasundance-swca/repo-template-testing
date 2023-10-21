@@ -1,4 +1,4 @@
-name: Autofix Pull Request
+name: Pull Code Quality
 
 on:
   pull_request:
@@ -47,3 +47,39 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: "Apply auto format"
+
+  check-pull-request:
+    needs: autofix-pull-request
+    name: Check Pull Request
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: List Changed Python Files
+      run: |
+        git fetch origin main
+        echo "ALTERED_PYTHON_FILES=$(git diff --name-only origin/main..HEAD | grep -P '^.*\.py$' | tr '\n' ' ')" >> $GITHUB_ENV
+      id: pydiff
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+        cache: pip
+
+    - name: Install Python libraries
+      run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
+
+    - name: ruff
+      run: |
+        ruff --ignore E501 ${{ env.ALTERED_PYTHON_FILES }}
+
+    - name: mypy
+      run: |
+        mypy ${{ env.ALTERED_PYTHON_FILES }}
+
+    - name: bandit
+      run: |
+        bandit ${{ env.ALTERED_PYTHON_FILES }}
