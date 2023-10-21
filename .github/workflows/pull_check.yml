@@ -26,6 +26,8 @@ jobs:
       with:
         python-version: 3.11
         cache: pip
+
+    - name: Install Python libraries
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
     - name: ruff
