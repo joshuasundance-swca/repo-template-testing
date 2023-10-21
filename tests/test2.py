@@ -1,2 +1,2 @@
 def test_main2():
-    assert True
+    assert True  # nosec B101
