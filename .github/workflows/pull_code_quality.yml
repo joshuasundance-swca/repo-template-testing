@@ -6,13 +6,9 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  autofix-pull-request:
-    name: Autofix Pull Request
+  pydiff:
+    name: Look for Changes in Python Files
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-      pull-requests: write
 
     outputs:
       python_files_altered: ${{ env.PYTHON_FILES_ALTERED }}
@@ -28,58 +24,55 @@ jobs:
       run: |
         git fetch origin main
         echo "ALTERED_PYTHON_FILES=$(git diff --name-only --diff-filter=d origin/main..HEAD | grep -P '^.*\.py$' | tr '\n' ' ')" >> $GITHUB_ENV
-      id: pydiff
-
-    - name: Check if Python files have been altered
-      run: |
         if [ -z "${{ env.ALTERED_PYTHON_FILES }}" ]; then
           echo "PYTHON_FILES_ALTERED=false" >> $GITHUB_ENV
         else
           echo "PYTHON_FILES_ALTERED=true" >> $GITHUB_ENV
         fi
 
+  fix:
+    needs: pydiff
+    if: ${{ needs.pydiff.outputs.python_files_altered == 'true' }}
+    name: Check Pull Request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      ALTERED_PYTHON_FILES: ${{ needs.pydiff.outputs.altered_python_files }}
+
+    steps:
     - name: Set up Python
-      if: ${{ env.PYTHON_FILES_ALTERED == 'true' }}
       uses: actions/setup-python@v4
       with:
         python-version: 3.11
         cache: pip
 
     - name: Install Python libraries
-      if: ${{ env.PYTHON_FILES_ALTERED == 'true' }}
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
     - name: ruff
-      if: ${{ env.PYTHON_FILES_ALTERED == 'true' }}
       run: ruff --fix --ignore E501 ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: black
-      if: ${{ env.PYTHON_FILES_ALTERED == 'true' }}
       run: black ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: Commit formatting changes
-      if: ${{ env.PYTHON_FILES_ALTERED == 'true' }}
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: "Apply auto format"
 
-  check-pull-request:
-    needs: autofix-pull-request
-    if: ${{ needs.autofix-pull-request.outputs.python_files_altered == 'true' }}
+  check:
+    needs: [pydiff, fix]
+    if: ${{ needs.pydiff.outputs.python_files_altered == 'true' }}
     name: Check Pull Request
     runs-on: ubuntu-latest
     env:
-      ALTERED_PYTHON_FILES: ${{ needs.autofix-pull-request.outputs.altered_python_files }}
+      ALTERED_PYTHON_FILES: ${{ needs.pydiff.outputs.altered_python_files }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: List Changed Python Files
-      run: |
-        git fetch origin main
-        echo "ALTERED_PYTHON_FILES=$(git diff --name-only --diff-filter=d origin/main..HEAD | grep -P '^.*\.py$' | tr '\n' ' ')" >> $GITHUB_ENV
-      id: pydiff
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -97,5 +90,4 @@ jobs:
       run: bandit ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: pytest
-      continue-on-error: true
       run: (pytest --co && pytest) || echo "Nothing to test"
