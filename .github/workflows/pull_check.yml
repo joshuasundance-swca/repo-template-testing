@@ -14,14 +14,17 @@ jobs:
       contents: write
       pull-requests: write
 
-    env:
-      ALTERED_PYTHON_FILES: $(git diff --name-only main..HEAD | grep -P '^.*\.py$' | tr '\n' ' ')
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         token: ${{ secrets.WORKFLOW_GIT_ACCESS_TOKEN }}
+
+    - name: List Changed Python Files
+      run: |
+        echo "ALTERED_PYTHON_FILES=$(git diff --name-only main..HEAD | grep -P '^.*\.py$' | tr '\n' ' ')" >> $GITHUB_ENV
+      id: pydiff
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -34,8 +37,8 @@ jobs:
 
     - name: Format with ruff and black
       run: |
-        ruff --fix --ignore E501 $ALTERED_PYTHON_FILES
-        black $ALTERED_PYTHON_FILES
+        ruff --fix --ignore E501 ${{ env.ALTERED_PYTHON_FILES }}
+        black ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: Commit formatting changes
       uses: stefanzweifel/git-auto-commit-action@v4
@@ -44,8 +47,8 @@ jobs:
 
     - name: Lint with mypy
       run: |
-        mypy $ALTERED_PYTHON_FILES
+        mypy ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: Security check with bandit
       run: |
-        bandit $ALTERED_PYTHON_FILES
+        bandit ${{ env.ALTERED_PYTHON_FILES }}
