@@ -33,7 +33,7 @@ jobs:
   fix:
     needs: pydiff
     if: ${{ needs.pydiff.outputs.python_files_altered == 'true' }}
-    name: Check Pull Request
+    name: Autofix Pull Request
     runs-on: ubuntu-latest
     permissions:
       contents: write
