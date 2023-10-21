@@ -1,19 +1,24 @@
-name: Check Pull Request
+name: Autofix Pull Request
 
 on:
-  workflow_run:
-    workflows: ["Autofix Pull Request"]
-    types:
-      - completed
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 jobs:
-  check-pull-request:
-    name: Check Pull Request
+  autofix-pull-request:
+    name: Autofix Pull Request
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.WORKFLOW_GIT_ACCESS_TOKEN }}
 
     - name: List Changed Python Files
       run: |
@@ -30,12 +35,13 @@ jobs:
 
     - name: ruff
       run: |
-        ruff --ignore E501 ${{ env.ALTERED_PYTHON_FILES }}
+        ruff --fix --ignore E501 ${{ env.ALTERED_PYTHON_FILES }}
 
-    - name: mypy
+    - name: black
       run: |
-        mypy ${{ env.ALTERED_PYTHON_FILES }}
+        black ${{ env.ALTERED_PYTHON_FILES }}
 
-    - name: bandit
-      run: |
-        bandit ${{ env.ALTERED_PYTHON_FILES }}
+    - name: Commit formatting changes
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: "Apply auto format"
