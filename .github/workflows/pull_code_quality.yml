@@ -21,8 +21,9 @@ jobs:
     - name: List Changed Python Files
       run: |
         git fetch origin main
-        echo "ALTERED_PYTHON_FILES=$(git diff --name-only --diff-filter=d origin/main..HEAD | grep -P '^.*\.py$' | tr '\n' ' ')" >> $GITHUB_ENV
-        if [ -z "${{ env.ALTERED_PYTHON_FILES }}" ]; then
+        altered_files = $(git diff --name-only --diff-filter=d origin/main..HEAD | grep -P '^.*\.py$' | tr '\n' ' ')
+        echo "ALTERED_PYTHON_FILES=$altered_files" >> $GITHUB_ENV
+        if [ -z $altered_files ]; then
           echo "PYTHON_FILES_ALTERED=false" >> $GITHUB_ENV
         else
           echo "PYTHON_FILES_ALTERED=true" >> $GITHUB_ENV
