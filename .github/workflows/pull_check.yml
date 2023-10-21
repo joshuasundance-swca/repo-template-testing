@@ -30,7 +30,7 @@ jobs:
         cache: pip
 
     - name: Install Python libraries
-      run: pip install --upgrade -r .github/workflows/requirements/pull_requirements.txt
+      run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
     - name: Format with ruff and black
       run: |
