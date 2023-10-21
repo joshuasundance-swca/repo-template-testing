@@ -36,12 +36,10 @@ jobs:
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
     - name: ruff
-      run: |
-        ruff --fix --ignore E501 ${{ env.ALTERED_PYTHON_FILES }}
+      run: ruff --fix --ignore E501 ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: black
-      run: |
-        black ${{ env.ALTERED_PYTHON_FILES }}
+      run: black ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: Commit formatting changes
       uses: stefanzweifel/git-auto-commit-action@v4
@@ -60,7 +58,7 @@ jobs:
     - name: List Changed Python Files
       run: |
         git fetch origin main
-        echo "ALTERED_PYTHON_FILES=$(git diff --name-only origin/main..HEAD | grep -P '^.*\.py$' | tr '\n' ' ')" >> $GITHUB_ENV
+        echo "ALTERED_PYTHON_FILES=$(git diff --name-only --diff-filter=d origin/main..HEAD | grep -P '^.*\.py$' | tr '\n' ' ')" >> $GITHUB_ENV
       id: pydiff
 
     - name: Set up Python
@@ -73,14 +71,11 @@ jobs:
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
     - name: mypy
-      run: |
-        mypy ${{ env.ALTERED_PYTHON_FILES }}
+      run: mypy ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: bandit
-      run: |
-        bandit ${{ env.ALTERED_PYTHON_FILES }}
+      run: bandit ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: pytest
       continue-on-error: true
-      run: |
-        (pytest --co && pytest) || echo "Nothing to test"
+      run: (pytest --co && pytest) || echo "Nothing to test"
