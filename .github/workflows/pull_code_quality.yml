@@ -110,10 +110,8 @@ jobs:
         echo "PYTEST_EXIT_CODE=$pytest_exit_code" >> $GITHUB_ENV
 
     - name: Run Tests
-      with:
-        PYTEST_EXIT_CODE: ${{ env.PYTEST_EXIT_CODE }}
       run: |
-        if [ $PYTEST_EXIT_CODE -eq 0 ]; then
+        if [ ${{ env.PYTEST_EXIT_CODE }} -eq 0 ]; then
           pytest
         else
           echo "Nothing to test"
