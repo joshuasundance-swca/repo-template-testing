@@ -16,6 +16,7 @@ jobs:
 
     outputs:
       python_files_altered: ${{ env.PYTHON_FILES_ALTERED }}
+      altered_python_files: ${{ env.ALTERED_PYTHON_FILES }}
 
     steps:
     - name: Checkout code
@@ -64,9 +65,11 @@ jobs:
 
   check-pull-request:
     needs: autofix-pull-request
-    if: ${{ env.PYTHON_FILES_ALTERED == 'true' }}
+    if: ${{ needs.autofix-pull-request.outputs.python_files_altered == 'true' }}
     name: Check Pull Request
     runs-on: ubuntu-latest
+    env:
+      ALTERED_PYTHON_FILES: ${{ needs.autofix-pull-request.outputs.altered_python_files }}
 
     steps:
     - name: Checkout code
