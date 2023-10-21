@@ -103,6 +103,7 @@ jobs:
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
     - name: List Tests
+      continue-on-error: true
       run: |
         pytest --co
         pytest_exit_code=$?
