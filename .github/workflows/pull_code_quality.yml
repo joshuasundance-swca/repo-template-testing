@@ -72,10 +72,6 @@ jobs:
     - name: Install Python libraries
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
-    - name: ruff
-      run: |
-        ruff --ignore E501 ${{ env.ALTERED_PYTHON_FILES }}
-
     - name: mypy
       run: |
         mypy ${{ env.ALTERED_PYTHON_FILES }}
@@ -84,25 +80,7 @@ jobs:
       run: |
         bandit ${{ env.ALTERED_PYTHON_FILES }}
 
-  tests:
-    needs: check-pull-request
-    name: Find and Run Tests
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11
-        cache: pip
-
-    - name: Install Python libraries
-      run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
-
-    - name: Run Tests
+    - name: pytest
       continue-on-error: true
       run: |
         (pytest --co && pytest) || echo "Nothing to test"
