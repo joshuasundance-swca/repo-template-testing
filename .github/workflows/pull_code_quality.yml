@@ -36,6 +36,7 @@ jobs:
     if: ${{ needs.pydiff.outputs.python_files_altered == 'true' }}
     name: Autofix Pull Request
     runs-on: ubuntu-latest
+    continue-on-error: true
     permissions:
       contents: write
       pull-requests: write
@@ -57,11 +58,16 @@ jobs:
     - name: Install Python libraries
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
-    - name: ruff
-      run: ruff --fix --ignore E501 ${{ env.ALTERED_PYTHON_FILES }}
+    - name: Cache pre-commit
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pre-commit
+        key: ${{ runner.os }}-pre-commit
+        restore-keys: |
+          ${{ runner.os }}-pre-commit
 
-    - name: black
-      run: black ${{ env.ALTERED_PYTHON_FILES }}
+    - name: Run pre-commit
+      run: pre-commit install && pre-commit run --files ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: Commit formatting changes
       uses: stefanzweifel/git-auto-commit-action@v4
