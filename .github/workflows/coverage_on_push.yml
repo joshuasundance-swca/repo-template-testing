@@ -28,9 +28,13 @@ jobs:
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
     - name: "Run coverage"
       run: |
-        (pytest --co && coverage run -m pytest) || echo "Nothing to test"
-        coverage report -m --format=markdown > COVERAGE.md
-        coverage-badge -fo coverage.svg
+        if pytest --co; then
+            coverage run -m pytest
+            coverage report -m --format=markdown > COVERAGE.md
+            coverage-badge -fo coverage.svg
+        else
+            echo "Nothing to test"
+        fi
     - name: Commit changes
       with:
         COMMIT_MESSAGE: "Update coverage"
