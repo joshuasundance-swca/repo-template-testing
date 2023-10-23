@@ -1,4 +1,3 @@
-import os
 def test_main():
-    print(f'test!')
+    print("test!")
     assert True  # nosec B101
