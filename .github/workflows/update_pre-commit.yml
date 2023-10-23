@@ -28,6 +28,14 @@ jobs:
     - name: Install Python libraries
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
+    - name: Cache pre-commit
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pre-commit
+        key: ${{ runner.os }}-pre-commit
+        restore-keys: |
+          ${{ runner.os }}-pre-commit
+
     - name: Update pre-commit
       run: pre-commit install && pre-commit autoupdate
 
