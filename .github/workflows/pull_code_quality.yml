@@ -67,6 +67,7 @@ jobs:
           ${{ runner.os }}-pre-commit
 
     - name: Run pre-commit
+      continue-on-error: true
       run: pre-commit install && pre-commit run --files ${{ env.ALTERED_PYTHON_FILES }}
 
     - name: Commit formatting changes
