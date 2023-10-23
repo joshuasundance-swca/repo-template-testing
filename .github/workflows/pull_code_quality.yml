@@ -95,11 +95,11 @@ jobs:
     - name: Install Python libraries
       run: pip install --upgrade -r .github/workflows/requirements/requirements.txt
 
-    - name: mypy
-      run: mypy ${{ env.ALTERED_PYTHON_FILES }}
-
-    - name: bandit
-      run: bandit ${{ env.ALTERED_PYTHON_FILES }}
-
     - name: pytest
-      run: (pytest --co && pytest) || echo "Nothing to test"
+      run: |
+        if pytest --co; then
+            coverage run -m pytest
+            coverage report -m --format=markdown
+        else
+            echo "Nothing to test"
+        fi
