@@ -10,7 +10,7 @@
 exclude: "(.idea)|(docs)|(.*.md)"
 repos:
 -   repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.1.6"
+    rev: "v0.1.7"
     hooks:
     -   id: ruff
         args: [--fix, --exit-non-zero-on-fix, --ignore, E501]
@@ -59,7 +59,7 @@ repos:
     hooks:
     -   id: add-trailing-comma
 -   repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
+    rev: 1.7.6
     hooks:
     -   id: bandit
         args: ["-x", "tests/*.py"]
